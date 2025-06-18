@@ -65,11 +65,16 @@ jobs:
       - name: Helm lint
         run: helm lint ./helm
 
-      - name: Package Helm Chart
-        run: helm package ./helm --destination ./helm-packages
+      - name: Package Helm chart
+        run: helm package helm/ -d packaged-charts
 
-      - name: Upload Helm Chart artifact
-        uses: actions/upload-artifact@v3
+      - name: Generate or update index.yaml
+        run: |
+          helm repo index packaged-charts --url https://mikumifa.github.io/biliTickerStorm/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          name: helm-chart
-          path: ./helm-packages/*.tgz
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./packaged-charts
+          publish_branch: gh-pages
