@@ -2,25 +2,21 @@ version: '3.8'
 
 services:
   ticket-master:
-    build:
-      context: .
-      dockerfile: master.Dockerfile
+    image: ticket-master:latest
     container_name: ticket-master-service
     restart: unless-stopped
     networks:
-      - app-network
+      - bili-ticket-storm-network
     environment:
       - CONFIG_PATH=/app/data
     volumes:
       - ./data:/app/data
 
   ticket-worker:
-    build:
-      context: .
-      dockerfile: worker.Dockerfile
+    image: ticket-worker:latest
     restart: unless-stopped
     networks:
-      - app-network
+      - bili-ticket-storm-network
     environment:
       - MASTER_SERVER_ADDR=ticket-master:40052
       - PUSHPLUS_TOKEN=
@@ -35,14 +31,12 @@ services:
       # 或 replicas: 5 来自己设定worker数量
 
   gt-python:
-    build:
-      context: .
-      dockerfile: python.Dockerfile
+    image: gt-python:latest
     container_name: gt-python-service
     restart: unless-stopped
     networks:
-      - app-network
+      - bili-ticket-storm-network
 
 networks:
-  bili-ticket-network:
+  bili-ticket-storm-network:
     external: true
