@@ -17,7 +17,7 @@
 <details> <summary><strong>📦 远程仓库安装（推荐）</strong></summary>
 
 ```bash
-helm repo add bili-ticket-storm https://mikumifa.github.io/biliTickerStorm/
+helm repo add bili-ticker-storm https://mikumifa.github.io/biliTickerStorm/
 helm repo update
 ```
 
@@ -25,7 +25,7 @@ helm repo update
 
 ```bash
 # 如果使用本地 Chart 目录
-helm install bili-ticket-storm bili-ticket-storm/bili-ticket-storm \
+helm install bili-ticker-storm bili-ticker-storm/bili-ticker-storm \
   --set hostDataPath=/your/host/data/path \
   --set ticketWorker.pushplusToken="your_token" \
   --set ticketWorker.ticketInterval="300" \
@@ -41,7 +41,7 @@ helm install bili-ticket-storm bili-ticket-storm/bili-ticket-storm \
 ### 3. 升级 Chart
 
 ```bash
-helm upgrade bili-ticket-storm bili-ticket-storm/bili-ticket-storm --reuse-values \
+helm upgrade bili-ticker-storm bili-ticker-storm/bili-ticker-storm --reuse-values \
   --set ticketWorker.ticketInterval="600"
 ```
 ---
@@ -55,7 +55,7 @@ helm upgrade bili-ticket-storm bili-ticket-storm/bili-ticket-storm --reuse-value
 # 克隆仓库
 git clone https://github.com/mikumifa/biliTickerStorm
 # 使用本地 Chart 包
-helm install bili-ticket-storm bili-ticket-storm/bili-ticket-storm \
+helm install bili-ticker-storm bili-ticker-storm/bili-ticker-storm \
   --set hostDataPath=/your/host/data/path \
   --set ticketWorker.pushplusToken="your_token" \
   --set ticketWorker.ticketInterval="300" \
@@ -64,7 +64,7 @@ helm install bili-ticket-storm bili-ticket-storm/bili-ticket-storm \
 ### 2. 升级 Chart
 
 ```bash
-helm upgrade bili-ticket-storm ./helm --reuse-values
+helm upgrade bili-ticker-storm ./helm --reuse-values
 ```
 </details>
 <details>
@@ -72,7 +72,7 @@ helm upgrade bili-ticket-storm ./helm --reuse-values
 
 ### ⏹ 卸载
 ```bash
-helm uninstall bili-ticket-storm
+helm uninstall bili-ticker-storm
 ```
 </details>
 
