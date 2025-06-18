@@ -29,25 +29,25 @@ jobs:
         id: vars
         run: echo "TAG=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
 
-      - name: Build and push ticket-master image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: master.Dockerfile
-          push: true
-          tags: |
-            ${{ env.IMAGE_PREFIX }}-master:latest
-            ${{ env.IMAGE_PREFIX }}-master:${{ env.TAG }}
-
-      - name: Build and push ticket-worker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: worker.Dockerfile
-          push: true
-          tags: |
-            ${{ env.IMAGE_PREFIX }}-worker:latest
-            ${{ env.IMAGE_PREFIX }}-worker:${{ env.TAG }}
+#      - name: Build and push ticket-master image
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: .
+#          file: master.Dockerfile
+#          push: true
+#          tags: |
+#            ${{ env.IMAGE_PREFIX }}-master:latest
+#            ${{ env.IMAGE_PREFIX }}-master:${{ env.TAG }}
+#
+#      - name: Build and push ticket-worker image
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: .
+#          file: worker.Dockerfile
+#          push: true
+#          tags: |
+#            ${{ env.IMAGE_PREFIX }}-worker:latest
+#            ${{ env.IMAGE_PREFIX }}-worker:${{ env.TAG }}
 
 #      - name: Build and push gt-python image
 #        uses: docker/build-push-action@v5
