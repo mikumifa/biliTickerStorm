@@ -1,14 +1,14 @@
 apiVersion: v1
 entries:
-  bili-ticket-storm:
+  bili-ticker-storm:
   - apiVersion: v2
     appVersion: "1.0"
-    created: "2025-06-18T17:31:21.933090504Z"
-    description: A Helm chart for bili-ticket-storm app
-    digest: 2ba8bad9ec4a514294c9a0f0cd2a52a833d0b773487e3d7ffaf3f3d660804288
-    name: bili-ticket-storm
+    created: "2025-06-18T18:15:37.296559621Z"
+    description: A Helm chart for bili-ticker-storm app
+    digest: 0ee466ba56a3756a84d03b1a2db162ac279c87c713aa6f238e6c2e9d0e120482
+    name: bili-ticker-storm
     type: application
     urls:
-    - https://mikumifa.github.io/biliTickerStorm/bili-ticket-storm-0.1.0.tgz
-    version: 0.1.0
-generated: "2025-06-18T17:31:21.932726053Z"
+    - https://mikumifa.github.io/biliTickerStorm/bili-ticker-storm-v0.0.5.tgz
+    version: v0.0.5
+generated: "2025-06-18T18:15:37.296047103Z"
