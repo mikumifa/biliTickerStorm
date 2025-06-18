@@ -1,87 +1,82 @@
-# 🎫 BiliTickerStorm - B 站分布式抢票
 
-> 本项目使用 **Docker Swarm** 构建，具备良好的分布式扩展能力，可实现多节点协作式抢票。
+# 🎫 BiliTickerStorm
 
----
 
-## 📦 项目结构
+## ⚙️ 服务说明
 
-```bash
-.
-├── docker-compose.yml            # 兼容 Compose 和 Swarm 的服务定义
-├── master.Dockerfile             # ticket-master 构建文件
-├── worker.Dockerfile             # ticket-worker 构建文件
-├── python.Dockerfile             # gt-python 图形验证服务
-├── data/                         # 配置数据目录（挂载给 master）
-└── README.md
-```
-
----
-
-## ⚙️ 服务组件说明
-
-| 服务名          | 描述                    | 备注       |
-| --------------- | ----------------------- | ---------- |
-| `ticket-master` | 主控服务，负责调度任务  | 单实例部署 |
+| 服务名             | 说明              | 备注    |
+| --------------- | --------------- | ----- |
+| `ticket-master` | 主控服务，负责调度任务     | 单实例部署 |
 | `ticket-worker` | 抢票 worker，可横向扩展 | 支持多实例 |
-| `gt-python`     | 图形验证处理服务        | 单实例部署 |
+| `gt-python`     | 图形验证码处理服务       | 单实例部署 |
 
 ---
 
-## 🚀 快速部署步骤（Docker Swarm）
+## 🚀 快速部署步骤
 
-### 0. 下载 or Clone 本项目
-
-### 1. 配置 Swarm 集群
-
-> 本项目暂只支持单个 master 节点
-
-参考 https://learn.microsoft.com/zh-cn/virtualization/windowscontainers/manage-containers/swarm-mode
-
-linux 系统检查 vxlan 内核
+<details> <summary><strong>📦 远程仓库安装（推荐）</strong></summary>
 
 ```bash
-lsmod | grep vxlan
-sudo modprobe vxlan  # 如果没加载则加载
+helm repo add bili-ticket-storm https://mikumifa.github.io/biliTickerStorm/
+helm repo update
 ```
 
----
-
-### 2. 部署服务
-
-> 在 master 节点运行，可以在 docker-compose-swarm.ym 中更改相应配置
+### 2. 安装 Chart
 
 ```bash
-# 启动
-docker stack deploy -c docker-compose-swarm.yml bili-ticker-storm
-# 关闭
-docker stack rm bili-ticker-storm
+# 如果使用本地 Chart 目录
+helm install bili-ticket-storm bili-ticket-storm/bili-ticket-storm \
+  --set hostDataPath=/your/host/data/path \
+  --set ticketWorker.pushplusToken="your_token" \
+  --set ticketWorker.ticketInterval="300" \
+  --set ticketWorker.ticketTimeStart="2025-05-20T13:14"
+  
 ```
 
-> `bili-ticker-storm` 是 Stack 名称，服务会注册为 `bili-ticker-storm_ticket-master` 等。
+> - `hostDataPath` 是抢票配置文件目录，挂载给 `ticket-master` 容器用。
+> - `ticketWorker.pushplusToken` 是plusplus 推送配置，设置后可以接收抢票结果通知。
+> - `ticketWorker.ticketInterval` 是抢票间隔秒数，默认 300 秒。
+> - `ticketWorker.ticketTimeStart` 是定时启动时间，格式为 `2025-05-20T13:14`，可选。
 
+### 3. 升级 Chart
+
+```bash
+helm upgrade bili-ticket-storm bili-ticket-storm/bili-ticket-storm --reuse-values \
+  --set ticketWorker.ticketInterval="600"
+```
 ---
+</details> 
+<details> <summary><strong>📦 本地 Chart 安装</strong></summary>
 
-## 📂 配置说明
 
-将抢票配置文件放置在 `data/` 目录下，会自动挂载至 master 容器 `/app/data`
+### 1. 安装 Chart
 
-抢票配置为 biliTickerBuy 生成的配置文件 https://github.com/mikumifa/biliTickerBuy
+```bash
+# 克隆仓库
+git clone https://github.com/mikumifa/biliTickerStorm
+# 使用本地 Chart 包
+helm install bili-ticket-storm bili-ticket-storm/bili-ticket-storm \
+  --set hostDataPath=/your/host/data/path \
+  --set ticketWorker.pushplusToken="your_token" \
+  --set ticketWorker.ticketInterval="300" \
+  --set ticketWorker.ticketTimeStart="2025-05-20T13:14"
+```
+### 2. 升级 Chart
 
----
+```bash
+helm upgrade bili-ticket-storm ./helm --reuse-values
+```
+</details>
+<details>
+<summary><strong>📌 通用命令</strong></summary>
 
-## 📌 环境变量
-
-### ticket-worker 支持：
-
-| 环境变量名          | 说明                 |
-| ------------------- | -------------------- |
-| `PUSHPLUS_TOKEN`    | plusplus 推送配置    |
-| `TICKET_INTERVAL`   | 抢票间隔秒数（可选） |
-| `TICKET_TIME_START` | 定时启动时间（可选） |
-
----
+### ⏹ 卸载
+```bash
+helm uninstall bili-ticket-storm
+```
+</details>
 
 ## 📄 License
 
 [MIT License](LICENSE)
+

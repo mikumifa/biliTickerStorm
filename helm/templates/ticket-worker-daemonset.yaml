@@ -23,3 +23,5 @@ spec:
               value: {{ .Values.ticketWorker.ticketInterval | quote }}
             - name: GT_BASE_URL
               value: {{ .Values.ticketWorker.gtBaseUrl | quote }}
+            - name: TICKET_TIME_START
+              value: {{ .Values.ticketWorker.ticketTimeStart | quote }}

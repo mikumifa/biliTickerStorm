@@ -9,7 +9,9 @@ ticketWorker:
   pushplusToken: ""
   ticketInterval: ""
   masterServerAddr: ticket-master:40052
+  time: ticket-master:40052
   gtBaseUrl: http://gt-python:8000
+  ticketTimeStart: 2006-01-02T15:04
 
 gtPython:
   image: mikumifa/bili-ticker-storm-gt-python:latest
