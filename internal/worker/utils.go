@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"strings"
 	"time"
 )
 
@@ -107,22 +106,35 @@ func GetEnv(key, defaultValue string) string {
 	return defaultValue
 }
 func GetOutboundIPToMaster(masterAddr string) (string, error) {
-	if strings.HasPrefix(masterAddr, "http://") {
-		masterAddr = strings.TrimPrefix(masterAddr, "http://")
-	} else if strings.HasPrefix(masterAddr, "https://") {
-		masterAddr = strings.TrimPrefix(masterAddr, "https://")
-	}
 	conn, err := net.Dial("tcp", masterAddr)
 	if err != nil {
-		return "", fmt.Errorf("dial master failed: %w", err)
+		ip, err := GetLocalIP()
+		if err != nil {
+			return "", fmt.Errorf("dial master failed: %w", err)
+		}
+		return ip, nil
 	}
 	defer conn.Close()
 	localAddr := conn.LocalAddr().(*net.TCPAddr)
 	localIP := localAddr.IP.String()
-	if strings.HasPrefix(localIP, "http://") {
-		localIP = strings.TrimPrefix(localIP, "http://")
-	} else if strings.HasPrefix(localIP, "https://") {
-		localIP = strings.TrimPrefix(localIP, "https://")
-	}
 	return localIP, nil
+}
+func GetLocalIP() (string, error) {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return "", err
+	}
+	for _, iface := range ifaces {
+		// 过滤掉 loopback 和未启用的网卡
+		if iface.Flags&net.FlagLoopback != 0 || iface.Flags&net.FlagUp == 0 {
+			continue
+		}
+		addrs, _ := iface.Addrs()
+		for _, addr := range addrs {
+			if ipnet, ok := addr.(*net.IPNet); ok && ipnet.IP.To4() != nil {
+				return ipnet.IP.String(), nil
+			}
+		}
+	}
+	return "", fmt.Errorf("no suitable IP found")
 }
