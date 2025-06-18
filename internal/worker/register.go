@@ -12,44 +12,44 @@ import (
 	"time"
 )
 
-var log = Logger
-
-type Manager struct {
+type Register struct {
 	mu           sync.Mutex
 	workerID     string
 	address      string
 	masterAddr   string
-	status       WorkerStatus
+	ws           WorkerStatus
+	ts           TaskStatus
 	TaskAssigned string
 	stopChan     chan struct{}
 }
 
-func (wm *Manager) GetStatus() WorkerStatus {
+func (wm *Register) GetStatus() WorkerStatus {
 	wm.mu.Lock()
 	defer wm.mu.Unlock()
-	return wm.status
+	return wm.ws
 }
 
-func (wm *Manager) SetStatus(s WorkerStatus, taskId string) {
+func (wm *Register) SetStatus(ws WorkerStatus, ts TaskStatus, taskId string) {
 	wm.mu.Lock()
 	defer wm.mu.Unlock()
-	wm.status = s
+	wm.ws = ws
+	wm.ts = ts
 	wm.TaskAssigned = taskId
 }
 
-func NewWorkerManager(masterAddr string) *Manager {
+func NewWorkerManager(masterAddr string) *Register {
 	hostname, _ := os.Hostname()
 	workerID := fmt.Sprintf("worker-%s-%d", hostname, time.Now().Unix())
 
-	return &Manager{
+	return &Register{
 		workerID:   workerID,
 		masterAddr: masterAddr,
-		status:     Idle,
+		ws:         Idle,
 		stopChan:   make(chan struct{}),
 	}
 }
 
-func (wm *Manager) RegisterToMaster() error {
+func (wm *Register) RegisterToMaster() error {
 	var err error
 	wm.address, err = GetOutboundIPToMaster(wm.masterAddr)
 	if err != nil {
@@ -57,37 +57,15 @@ func (wm *Manager) RegisterToMaster() error {
 	}
 	wm.address += ":40051"
 
-	conn, err := grpc.Dial(wm.masterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	err = wm.sendHeartbeat()
 	if err != nil {
-		return fmt.Errorf("连接主服务器失败: %v", err)
+		log.Warningf("注册到主服务器失败:%v", err)
 	}
-
-	client := masterpb.NewTicketMasterClient(conn)
-
-	req := &masterpb.WorkerInfo{
-		WorkerId:     wm.workerID,
-		Address:      wm.address,
-		Status:       int32(wm.GetStatus()),
-		TaskAssigned: wm.TaskAssigned,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	reply, err := client.RegisterWorker(ctx, req)
-	if err != nil {
-		return fmt.Errorf("注册请求失败: %v", err)
-	}
-
-	if !reply.Success {
-		return fmt.Errorf("注册失败: %s", reply.Message)
-	}
-
 	log.Printf("成功注册到主服务器: WorkerID=%s, Address=%s", wm.workerID, wm.address)
 	return nil
 }
 
-func (wm *Manager) StartHeartbeat(interval time.Duration) {
+func (wm *Register) StartHeartbeat(interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	for {
@@ -103,7 +81,7 @@ func (wm *Manager) StartHeartbeat(interval time.Duration) {
 	}
 }
 
-func (wm *Manager) sendHeartbeat() error {
+func (wm *Register) sendHeartbeat() error {
 	conn, err := grpc.Dial(wm.masterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
@@ -114,7 +92,8 @@ func (wm *Manager) sendHeartbeat() error {
 	req := &masterpb.WorkerInfo{
 		WorkerId:     wm.workerID,
 		Address:      wm.address,
-		Status:       int32(wm.GetStatus()),
+		WorkStatus:   int32(wm.GetStatus()),
+		TaskStatus:   string(wm.ts),
 		TaskAssigned: wm.TaskAssigned,
 	}
 
@@ -122,11 +101,11 @@ func (wm *Manager) sendHeartbeat() error {
 	defer cancel()
 	_, err = client.RegisterWorker(ctx, req)
 	if err != nil {
-		log.Printf("心跳更新失败: %v", err)
+		log.Errorf("%v", err)
 	}
 	return err
 }
-func (wm *Manager) UpdateTaskStatus(status TaskStatus, taskId string) error {
+func (wm *Register) CancelTask(s WorkerStatus) error {
 	conn, err := grpc.Dial(wm.masterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
@@ -134,31 +113,30 @@ func (wm *Manager) UpdateTaskStatus(status TaskStatus, taskId string) error {
 	defer conn.Close()
 
 	client := masterpb.NewTicketMasterClient(conn)
-	req := &masterpb.TaskStatusUpdate{
-		WorkerId: wm.workerID,
-		Status:   string(status),
-		TaskId:   taskId,
+	req := &masterpb.CancelTaskInfo{
+		WorkerId:     wm.workerID,
+		CancelTaskId: wm.TaskAssigned,
+		WorkStatus:   string(s),
 	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	_, err = client.UpdateTaskStatus(ctx, req)
+	_, err = client.CancelTask(ctx, req)
 	if err != nil {
-		log.Printf("更新Task失败: %v", err)
+		log.Errorf("%v", err)
 	}
 	return err
 }
 
-// UpdateWorkerStatus 更新状态，同时通过心跳汇报给worker taskId和状态绑定，在更新状态时候同步更新taskId
-func (wm *Manager) UpdateWorkerStatus(status WorkerStatus, taskId string) error {
-	wm.SetStatus(status, taskId)
+// UpdateWorkerStatusAndTaskStatus 更新 ws和ts，同时触发task的updateTime
+func (wm *Register) UpdateWorkerStatusAndTaskStatus(ws WorkerStatus, ts TaskStatus, taskId string) error {
+	wm.SetStatus(ws, ts, taskId)
 	return wm.sendHeartbeat()
 }
 
-func (wm *Manager) Stop() {
+func (wm *Register) Stop() {
 	close(wm.stopChan)
 }
 
-func (wm *Manager) GetWorkerID() string {
+func (wm *Register) GetWorkerID() string {
 	return wm.workerID
 }

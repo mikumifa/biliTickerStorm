@@ -19,8 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TicketMaster_RegisterWorker_FullMethodName   = "/worker.TicketMaster/RegisterWorker"
-	TicketMaster_UpdateTaskStatus_FullMethodName = "/worker.TicketMaster/UpdateTaskStatus"
+	TicketMaster_RegisterWorker_FullMethodName = "/worker.TicketMaster/RegisterWorker"
+	TicketMaster_CancelTask_FullMethodName     = "/worker.TicketMaster/CancelTask"
 )
 
 // TicketMasterClient is the client API for TicketMaster service.
@@ -30,7 +30,7 @@ const (
 // protoc --go_out=. --go-grpc_out=. proto/master.proto
 type TicketMasterClient interface {
 	RegisterWorker(ctx context.Context, in *WorkerInfo, opts ...grpc.CallOption) (*RegisterReply, error)
-	UpdateTaskStatus(ctx context.Context, in *TaskStatusUpdate, opts ...grpc.CallOption) (*UpdateReply, error)
+	CancelTask(ctx context.Context, in *CancelTaskInfo, opts ...grpc.CallOption) (*CancelReply, error)
 }
 
 type ticketMasterClient struct {
@@ -51,10 +51,10 @@ func (c *ticketMasterClient) RegisterWorker(ctx context.Context, in *WorkerInfo,
 	return out, nil
 }
 
-func (c *ticketMasterClient) UpdateTaskStatus(ctx context.Context, in *TaskStatusUpdate, opts ...grpc.CallOption) (*UpdateReply, error) {
+func (c *ticketMasterClient) CancelTask(ctx context.Context, in *CancelTaskInfo, opts ...grpc.CallOption) (*CancelReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateReply)
-	err := c.cc.Invoke(ctx, TicketMaster_UpdateTaskStatus_FullMethodName, in, out, cOpts...)
+	out := new(CancelReply)
+	err := c.cc.Invoke(ctx, TicketMaster_CancelTask_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (c *ticketMasterClient) UpdateTaskStatus(ctx context.Context, in *TaskStatu
 // protoc --go_out=. --go-grpc_out=. proto/master.proto
 type TicketMasterServer interface {
 	RegisterWorker(context.Context, *WorkerInfo) (*RegisterReply, error)
-	UpdateTaskStatus(context.Context, *TaskStatusUpdate) (*UpdateReply, error)
+	CancelTask(context.Context, *CancelTaskInfo) (*CancelReply, error)
 	mustEmbedUnimplementedTicketMasterServer()
 }
 
@@ -82,8 +82,8 @@ type UnimplementedTicketMasterServer struct{}
 func (UnimplementedTicketMasterServer) RegisterWorker(context.Context, *WorkerInfo) (*RegisterReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterWorker not implemented")
 }
-func (UnimplementedTicketMasterServer) UpdateTaskStatus(context.Context, *TaskStatusUpdate) (*UpdateReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateTaskStatus not implemented")
+func (UnimplementedTicketMasterServer) CancelTask(context.Context, *CancelTaskInfo) (*CancelReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelTask not implemented")
 }
 func (UnimplementedTicketMasterServer) mustEmbedUnimplementedTicketMasterServer() {}
 func (UnimplementedTicketMasterServer) testEmbeddedByValue()                      {}
@@ -124,20 +124,20 @@ func _TicketMaster_RegisterWorker_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TicketMaster_UpdateTaskStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TaskStatusUpdate)
+func _TicketMaster_CancelTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelTaskInfo)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TicketMasterServer).UpdateTaskStatus(ctx, in)
+		return srv.(TicketMasterServer).CancelTask(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TicketMaster_UpdateTaskStatus_FullMethodName,
+		FullMethod: TicketMaster_CancelTask_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TicketMasterServer).UpdateTaskStatus(ctx, req.(*TaskStatusUpdate))
+		return srv.(TicketMasterServer).CancelTask(ctx, req.(*CancelTaskInfo))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -154,8 +154,8 @@ var TicketMaster_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TicketMaster_RegisterWorker_Handler,
 		},
 		{
-			MethodName: "UpdateTaskStatus",
-			Handler:    _TicketMaster_UpdateTaskStatus_Handler,
+			MethodName: "CancelTask",
+			Handler:    _TicketMaster_CancelTask_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

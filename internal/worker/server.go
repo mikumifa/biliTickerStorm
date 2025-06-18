@@ -3,21 +3,20 @@ package worker
 import (
 	"biliTickerStorm/internal/worker/pb"
 	"context"
-	"github.com/sirupsen/logrus"
+	"fmt"
 )
 
 type Server struct {
 	pb.UnimplementedTicketWorkerServer
 	worker *Worker
-	logger *logrus.Logger
 }
 
 func NewServer(worker *Worker) *Server {
-	return &Server{worker: worker, logger: Logger}
+	return &Server{worker: worker}
 }
 func (s *Server) PushTask(ctx context.Context, req *pb.TaskRequest) (*pb.TaskResponse, error) {
 
-	err := s.worker.RunTask(ctx, req.TicketsInfo, s.worker.m.workerID)
+	err := s.worker.RunTask(ctx, req.TicketsInfo, req.TaskId)
 	if err != nil {
 		return &pb.TaskResponse{
 			Success: false,
@@ -26,6 +25,6 @@ func (s *Server) PushTask(ctx context.Context, req *pb.TaskRequest) (*pb.TaskRes
 	}
 	return &pb.TaskResponse{
 		Success: true,
-		Message: "Task accepted",
+		Message: fmt.Sprintf("Task <%s> is running", req.TaskId),
 	}, nil
 }

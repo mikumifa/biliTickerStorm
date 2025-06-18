@@ -6,14 +6,14 @@ option go_package = "internal/master/pb;pb";
 //protoc --go_out=. --go-grpc_out=. proto/master.proto
 service TicketMaster {
 rpc RegisterWorker(WorkerInfo) returns (RegisterReply);
-rpc UpdateTaskStatus(TaskStatusUpdate) returns (UpdateReply);
-
+rpc CancelTask(CancelTaskInfo) returns (CancelReply);
 }
 message WorkerInfo {
   string worker_id = 1;
   string address = 2;
-  int32 status = 3; // "Idle", "Working", "Risking"
+  int32 workStatus = 3; // "Idle", "Working", "Risking"
   string TaskAssigned = 4; //Task id
+  string taskStatus=5;
 
 }
 message RegisterReply {
@@ -22,13 +22,13 @@ message RegisterReply {
 }
 
 
-message TaskStatusUpdate {
-  string task_id = 1;
-  string worker_id = 2;
-  string status = 3; 
+message CancelTaskInfo {
+  string cancelTaskId = 1; //
+  string workerId=2;
+  string workStatus=3;
 }
 
-message UpdateReply {
+message CancelReply {
   bool success = 1;
   string message = 2;
 }

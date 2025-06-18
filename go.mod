@@ -4,6 +4,7 @@ go 1.24
 
 require (
 	github.com/beevik/ntp v1.4.3
+	github.com/caarlos0/env/v10 v10.0.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/valyala/fasthttp v1.62.0
 	google.golang.org/grpc v1.73.0

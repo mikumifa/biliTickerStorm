@@ -93,36 +93,58 @@ func (s *Server) LoadTasksFromDir(dirPath string) error {
 	return nil
 }
 
-func (s *Server) UpdateTaskStatus(ctx context.Context, req *masterpb.TaskStatusUpdate) (*masterpb.UpdateReply, error) {
-	err := s.SetTaskStatus(req.TaskId, TaskStatus(req.Status))
-	if err != nil {
-		return nil, err
+func (s *Server) CancelTask(ctx context.Context, req *masterpb.CancelTaskInfo) (*masterpb.CancelReply, error) {
+	s.workersMux.Lock()
+	s.tasksMux.Lock()
+	defer s.workersMux.Unlock()
+	defer s.tasksMux.Unlock()
+	cancelTask, exists := s.tasks[req.CancelTaskId]
+	if !exists {
+		return nil, fmt.Errorf("<%s> not found", req.CancelTaskId)
 	}
-	return &masterpb.UpdateReply{
+	if cancelTask.AssignedTo != req.WorkerId {
+		return nil, fmt.Errorf("<%s> not own by <%s>", req.CancelTaskId, req.WorkerId)
+	}
+	ownWorkerId := req.WorkerId
+	s.workers[ownWorkerId].TaskAssigned = ""
+	s.workers[ownWorkerId].Status = Idle
+	s.workers[ownWorkerId].UpdateTime = time.Now()
+	return &masterpb.CancelReply{
 		Success: true,
-		Message: "Task Update Successfully",
+		Message: fmt.Sprintf("<%s> cancel <%s> Successfully.", req.WorkerId, req.CancelTaskId),
 	}, nil
 }
 
 func (s *Server) RegisterWorker(ctx context.Context, req *masterpb.WorkerInfo) (*masterpb.RegisterReply, error) {
 	s.workersMux.Lock()
+	s.tasksMux.Lock()
+	defer s.tasksMux.Unlock()
 	defer s.workersMux.Unlock()
 	defer s.triggerSchedule()
 	existingWorker, exists := s.workers[req.WorkerId]
 	if exists {
 		existingWorker.Address = req.Address
-		existingWorker.Status = WorkerStatus(req.Status)
+		if existingWorker.Status != WorkerStatus(req.WorkStatus) {
+			existingWorker.Status = WorkerStatus(req.WorkStatus)
+			s.triggerSchedule() //触发调度
+		}
 		existingWorker.TaskAssigned = req.TaskAssigned
 		existingWorker.UpdateTime = time.Now()
-		if req.TaskAssigned != "" {
-			err := s.SetTaskStatus(req.TaskAssigned, TaskStatusDoing)
-			if err != nil {
-				return nil, err
-			}
-		}
 
-		s.logger.Infof("Worker Update: ID=%s, Address=%s, Status=%d",
-			req.WorkerId, req.Address, req.Status)
+		if req.TaskAssigned != "" {
+			task, exists := s.tasks[req.TaskAssigned]
+			if !exists {
+				return nil, fmt.Errorf("<%s> not found", req.TaskAssigned)
+			}
+			if string(task.Status) != req.TaskStatus {
+				//task信息发生变化
+				oldStatus := task.Status
+				task.Status = TaskStatus(req.TaskStatus)
+				log.Printf("<%s> => <%s>: %s ", oldStatus, task.Status, task.TaskName)
+				s.triggerSchedule() //触发调度
+			}
+			task.UpdatedAt = time.Now() //心跳信息
+		}
 		return &masterpb.RegisterReply{
 			Success: true,
 			Message: "Worker Update Successfully",
@@ -131,13 +153,13 @@ func (s *Server) RegisterWorker(ctx context.Context, req *masterpb.WorkerInfo) (
 	newWorker := &Worker{
 		WorkerID:     req.WorkerId,
 		Address:      req.Address,
-		Status:       WorkerStatus(req.Status),
+		Status:       WorkerStatus(req.WorkStatus),
 		TaskAssigned: req.TaskAssigned,
 		UpdateTime:   time.Now(),
 	}
 	s.workers[req.WorkerId] = newWorker
-	s.logger.Infof("Worker Register: ID=%s, Address=%s, Status=%d",
-		req.WorkerId, req.Address, req.Status)
+	s.logger.Infof("Worker Register: ID=%s, Address=%s, WorkStatus=%s",
+		req.WorkerId, req.Address, WorkerStatus(req.WorkStatus).String())
 	return &masterpb.RegisterReply{
 		Success: true,
 		Message: "Worker Register Successfully",
@@ -181,26 +203,6 @@ func (s *Server) CreateTask(taskName, tickerConfigContent string) *TaskInfo {
 	s.tasks[taskID] = task
 	log.Printf("Create Task : ID=%s, name=%s", taskID, taskName)
 	return task
-}
-
-func (s *Server) SetTaskStatus(taskId string, status TaskStatus) error {
-	s.tasksMux.Lock()
-	defer s.tasksMux.Unlock()
-
-	task, exists := s.tasks[taskId]
-	if !exists {
-		return fmt.Errorf("task not found")
-	}
-	oldStatus := task.Status
-	task.Status = status
-	task.UpdatedAt = time.Now()
-
-	if task.Status == TaskStatusDone {
-		s.releaseWorker(task.AssignedTo)
-	}
-
-	log.Printf("Task Status Update: ID=%s, %s -> %s", taskId, oldStatus, task.Status)
-	return nil
 }
 
 func (s *Server) checkWorkerHeartbeats() {
@@ -278,9 +280,6 @@ func (s *Server) scheduleTasks() {
 		if s.assignTaskToWorker(task, worker) {
 			assigned++
 		}
-	}
-	if assigned > 0 {
-		log.Printf("成功分配 %d 个任务", assigned)
 	}
 }
 
@@ -374,7 +373,7 @@ func (s *Server) assignTaskToWorker(task *TaskInfo, worker *Worker) bool {
 	worker.Status = Working
 	worker.TaskAssigned = task.ID
 	s.workersMux.Unlock()
-	log.Printf("任务 %s 成功分配给Worker %s", task.TaskName, worker.Address)
+	log.Printf("任务成功分配 <%s> => <%s>", task.TaskName, worker.Address)
 	return true
 }
 
@@ -384,16 +383,4 @@ func (s *Server) clearAndPendingTask(task *TaskInfo) {
 	task.Status = TaskStatusPending
 	task.AssignedTo = ""
 	task.UpdatedAt = time.Now()
-}
-
-// 释放worker
-func (s *Server) releaseWorker(workerID string) {
-	s.workersMux.Lock()
-	defer s.workersMux.Unlock()
-
-	if worker, exists := s.workers[workerID]; exists {
-		worker.Status = Idle
-		worker.TaskAssigned = ""
-		log.Printf("Worker %s 已释放，状态变为空闲", workerID)
-	}
 }

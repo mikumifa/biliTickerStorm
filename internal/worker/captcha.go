@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 )
 
 func HandleCaptcha(client *BiliClient, requestResult map[string]interface{}, phone string) error {
@@ -98,12 +97,7 @@ func HandleCaptcha(client *BiliClient, requestResult map[string]interface{}, pho
 }
 
 func HandleGeetest(gt string, challenge string) (validate string, seccode string, err error) {
-	baseURL := os.Getenv("GT_BASE_URL")
-	if baseURL == "" {
-		err = fmt.Errorf("环境变量 GT_BASE_URL 未设置")
-		return
-	}
-	gt_url := fmt.Sprintf("%s/validate/geetest", baseURL)
+	gt_url := fmt.Sprintf("%s/validate/geetest", Cfg.GTBaseURL)
 	requestBody := map[string]interface{}{
 		"type":      "geetest",
 		"gt":        gt,

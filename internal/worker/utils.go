@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/beevik/ntp"
-	"github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"os"
@@ -13,8 +12,6 @@ import (
 	"strings"
 	"time"
 )
-
-var Logger = logrus.New()
 
 func getIntFromMap(m map[string]interface{}, keys ...string) int {
 	for _, key := range keys {
@@ -67,20 +64,31 @@ func GetNestedString(m map[string]interface{}, keys ...string) (string, bool) {
 	return s, ok
 }
 
-func GetAccurateTime() (time.Time, error) {
-	resp, err := ntp.Query("ntp.aliyun.com")
-	if err != nil {
-		return time.Now(), err
+func GetAccurateTime() time.Time {
+	var ntpServers = []string{
+		"ntp.aliyun.com",
+		"cn.pool.ntp.org",
+		"time.google.com",
+		"time.windows.com",
+		"pool.ntp.org",
 	}
-	accurate := time.Now().Add(resp.ClockOffset)
-	return accurate, nil
+	for _, server := range ntpServers {
+		resp, err := ntp.Query(server)
+		if err != nil {
+			log.Warningf("ntp %s 无法使用", server)
+			continue
+		}
+		accurate := time.Now().Add(resp.ClockOffset)
+		log.Infof("使用ntp %s,时间偏差 %s", server, resp.ClockOffset.String())
+		return accurate
+	}
+	// 所有 NTP 失败，降级使用本地时间
+	log.Errorf("所有 NTP 服务器都无法访问，使用本地时间。")
+	return time.Now()
 }
 func SleepUntilAccurate(target time.Time) error {
 	for {
-		now, err := GetAccurateTime()
-		if err != nil {
-			now = time.Now()
-		}
+		now := GetAccurateTime()
 		if now.After(target) || now.Equal(target) {
 			return nil
 		}

@@ -25,8 +25,9 @@ type WorkerInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WorkerId      string                 `protobuf:"bytes,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
 	Address       string                 `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
-	Status        int32                  `protobuf:"varint,3,opt,name=status,proto3" json:"status,omitempty"`            // "Idle", "Working", "Risking"
+	WorkStatus    int32                  `protobuf:"varint,3,opt,name=workStatus,proto3" json:"workStatus,omitempty"`    // "Idle", "Working", "Risking"
 	TaskAssigned  string                 `protobuf:"bytes,4,opt,name=TaskAssigned,proto3" json:"TaskAssigned,omitempty"` //Task id
+	TaskStatus    string                 `protobuf:"bytes,5,opt,name=taskStatus,proto3" json:"taskStatus,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -75,9 +76,9 @@ func (x *WorkerInfo) GetAddress() string {
 	return ""
 }
 
-func (x *WorkerInfo) GetStatus() int32 {
+func (x *WorkerInfo) GetWorkStatus() int32 {
 	if x != nil {
-		return x.Status
+		return x.WorkStatus
 	}
 	return 0
 }
@@ -85,6 +86,13 @@ func (x *WorkerInfo) GetStatus() int32 {
 func (x *WorkerInfo) GetTaskAssigned() string {
 	if x != nil {
 		return x.TaskAssigned
+	}
+	return ""
+}
+
+func (x *WorkerInfo) GetTaskStatus() string {
+	if x != nil {
+		return x.TaskStatus
 	}
 	return ""
 }
@@ -141,29 +149,29 @@ func (x *RegisterReply) GetMessage() string {
 	return ""
 }
 
-type TaskStatusUpdate struct {
+type CancelTaskInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TaskId        string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
-	WorkerId      string                 `protobuf:"bytes,2,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
-	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	CancelTaskId  string                 `protobuf:"bytes,1,opt,name=cancelTaskId,proto3" json:"cancelTaskId,omitempty"` //
+	WorkerId      string                 `protobuf:"bytes,2,opt,name=workerId,proto3" json:"workerId,omitempty"`
+	WorkStatus    string                 `protobuf:"bytes,3,opt,name=workStatus,proto3" json:"workStatus,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *TaskStatusUpdate) Reset() {
-	*x = TaskStatusUpdate{}
+func (x *CancelTaskInfo) Reset() {
+	*x = CancelTaskInfo{}
 	mi := &file_proto_master_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *TaskStatusUpdate) String() string {
+func (x *CancelTaskInfo) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TaskStatusUpdate) ProtoMessage() {}
+func (*CancelTaskInfo) ProtoMessage() {}
 
-func (x *TaskStatusUpdate) ProtoReflect() protoreflect.Message {
+func (x *CancelTaskInfo) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_master_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -175,33 +183,33 @@ func (x *TaskStatusUpdate) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use TaskStatusUpdate.ProtoReflect.Descriptor instead.
-func (*TaskStatusUpdate) Descriptor() ([]byte, []int) {
+// Deprecated: Use CancelTaskInfo.ProtoReflect.Descriptor instead.
+func (*CancelTaskInfo) Descriptor() ([]byte, []int) {
 	return file_proto_master_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *TaskStatusUpdate) GetTaskId() string {
+func (x *CancelTaskInfo) GetCancelTaskId() string {
 	if x != nil {
-		return x.TaskId
+		return x.CancelTaskId
 	}
 	return ""
 }
 
-func (x *TaskStatusUpdate) GetWorkerId() string {
+func (x *CancelTaskInfo) GetWorkerId() string {
 	if x != nil {
 		return x.WorkerId
 	}
 	return ""
 }
 
-func (x *TaskStatusUpdate) GetStatus() string {
+func (x *CancelTaskInfo) GetWorkStatus() string {
 	if x != nil {
-		return x.Status
+		return x.WorkStatus
 	}
 	return ""
 }
 
-type UpdateReply struct {
+type CancelReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
@@ -209,20 +217,20 @@ type UpdateReply struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UpdateReply) Reset() {
-	*x = UpdateReply{}
+func (x *CancelReply) Reset() {
+	*x = CancelReply{}
 	mi := &file_proto_master_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UpdateReply) String() string {
+func (x *CancelReply) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateReply) ProtoMessage() {}
+func (*CancelReply) ProtoMessage() {}
 
-func (x *UpdateReply) ProtoReflect() protoreflect.Message {
+func (x *CancelReply) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_master_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -234,19 +242,19 @@ func (x *UpdateReply) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateReply.ProtoReflect.Descriptor instead.
-func (*UpdateReply) Descriptor() ([]byte, []int) {
+// Deprecated: Use CancelReply.ProtoReflect.Descriptor instead.
+func (*CancelReply) Descriptor() ([]byte, []int) {
 	return file_proto_master_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *UpdateReply) GetSuccess() bool {
+func (x *CancelReply) GetSuccess() bool {
 	if x != nil {
 		return x.Success
 	}
 	return false
 }
 
-func (x *UpdateReply) GetMessage() string {
+func (x *CancelReply) GetMessage() string {
 	if x != nil {
 		return x.Message
 	}
@@ -257,26 +265,34 @@ var File_proto_master_proto protoreflect.FileDescriptor
 
 const file_proto_master_proto_rawDesc = "" +
 	"\n" +
-	"\x12proto/master.proto\x12\x06worker\"\x7f\n" +
+	"\x12proto/master.proto\x12\x06worker\"\xa7\x01\n" +
 	"\n" +
 	"WorkerInfo\x12\x1b\n" +
 	"\tworker_id\x18\x01 \x01(\tR\bworkerId\x12\x18\n" +
-	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\x05R\x06status\x12\"\n" +
-	"\fTaskAssigned\x18\x04 \x01(\tR\fTaskAssigned\"C\n" +
+	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x1e\n" +
+	"\n" +
+	"workStatus\x18\x03 \x01(\x05R\n" +
+	"workStatus\x12\"\n" +
+	"\fTaskAssigned\x18\x04 \x01(\tR\fTaskAssigned\x12\x1e\n" +
+	"\n" +
+	"taskStatus\x18\x05 \x01(\tR\n" +
+	"taskStatus\"C\n" +
 	"\rRegisterReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"`\n" +
-	"\x10TaskStatusUpdate\x12\x17\n" +
-	"\atask_id\x18\x01 \x01(\tR\x06taskId\x12\x1b\n" +
-	"\tworker_id\x18\x02 \x01(\tR\bworkerId\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\tR\x06status\"A\n" +
-	"\vUpdateReply\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"p\n" +
+	"\x0eCancelTaskInfo\x12\"\n" +
+	"\fcancelTaskId\x18\x01 \x01(\tR\fcancelTaskId\x12\x1a\n" +
+	"\bworkerId\x18\x02 \x01(\tR\bworkerId\x12\x1e\n" +
+	"\n" +
+	"workStatus\x18\x03 \x01(\tR\n" +
+	"workStatus\"A\n" +
+	"\vCancelReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage2\x8e\x01\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage2\x86\x01\n" +
 	"\fTicketMaster\x12;\n" +
-	"\x0eRegisterWorker\x12\x12.worker.WorkerInfo\x1a\x15.worker.RegisterReply\x12A\n" +
-	"\x10UpdateTaskStatus\x12\x18.worker.TaskStatusUpdate\x1a\x13.worker.UpdateReplyB\x17Z\x15internal/master/pb;pbb\x06proto3"
+	"\x0eRegisterWorker\x12\x12.worker.WorkerInfo\x1a\x15.worker.RegisterReply\x129\n" +
+	"\n" +
+	"CancelTask\x12\x16.worker.CancelTaskInfo\x1a\x13.worker.CancelReplyB\x17Z\x15internal/master/pb;pbb\x06proto3"
 
 var (
 	file_proto_master_proto_rawDescOnce sync.Once
@@ -292,16 +308,16 @@ func file_proto_master_proto_rawDescGZIP() []byte {
 
 var file_proto_master_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_proto_master_proto_goTypes = []any{
-	(*WorkerInfo)(nil),       // 0: worker.WorkerInfo
-	(*RegisterReply)(nil),    // 1: worker.RegisterReply
-	(*TaskStatusUpdate)(nil), // 2: worker.TaskStatusUpdate
-	(*UpdateReply)(nil),      // 3: worker.UpdateReply
+	(*WorkerInfo)(nil),     // 0: worker.WorkerInfo
+	(*RegisterReply)(nil),  // 1: worker.RegisterReply
+	(*CancelTaskInfo)(nil), // 2: worker.CancelTaskInfo
+	(*CancelReply)(nil),    // 3: worker.CancelReply
 }
 var file_proto_master_proto_depIdxs = []int32{
 	0, // 0: worker.TicketMaster.RegisterWorker:input_type -> worker.WorkerInfo
-	2, // 1: worker.TicketMaster.UpdateTaskStatus:input_type -> worker.TaskStatusUpdate
+	2, // 1: worker.TicketMaster.CancelTask:input_type -> worker.CancelTaskInfo
 	1, // 2: worker.TicketMaster.RegisterWorker:output_type -> worker.RegisterReply
-	3, // 3: worker.TicketMaster.UpdateTaskStatus:output_type -> worker.UpdateReply
+	3, // 3: worker.TicketMaster.CancelTask:output_type -> worker.CancelReply
 	2, // [2:4] is the sub-list for method output_type
 	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name

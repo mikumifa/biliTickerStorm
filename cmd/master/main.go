@@ -1,29 +1,26 @@
 package main
 
 import (
+	"biliTickerStorm/internal/common"
 	"biliTickerStorm/internal/master"
 	"biliTickerStorm/internal/master/pb"
 	"google.golang.org/grpc"
-	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-func main() {
+var log = common.Logger
 
-	configPath := os.Getenv("CONFIG_PATH")
-	if configPath == "" {
-		configPath = "configs"
-	}
+func main() {
 
 	lis, err := net.Listen("tcp", ":40052")
 	if err != nil {
 		log.Fatalf("listening failed: %v", err)
 	}
 	masterServer := master.NewServer()
-	if err := masterServer.LoadTasksFromDir(configPath); err != nil {
+	if err := masterServer.LoadTasksFromDir(master.Cfg.Configpath); err != nil {
 		log.Fatalf("Read configs failed: %v", err)
 	}
 	s := grpc.NewServer()

@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"biliTickerStorm/internal/common"
 	"encoding/json"
 	"fmt"
 	"github.com/valyala/fasthttp"
@@ -124,15 +123,8 @@ func (bc *BiliClient) handleHTTPStatus(resp *fasthttp.Response) error {
 	case fasthttp.StatusOK:
 		return nil
 	case fasthttp.StatusPreconditionFailed:
-		taskId := bc.worker.m.TaskAssigned
-		err := bc.worker.UpdateWorkerStatus(common.Risking, "")
-		if err != nil {
-			return err
-		}
-		bc.worker.cancel() //取消
-		err = bc.worker.m.UpdateTaskStatus(common.TaskStatusPending, taskId)
-		if err != nil {
-			return err
+		if bc.worker.cancel != nil {
+			bc.worker.cancel() //取消
 		}
 		return fmt.Errorf("412风控")
 	default:
