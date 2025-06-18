@@ -1,0 +1,1 @@
+GEETEST_WORKER_COUNT 设置并行验证码数

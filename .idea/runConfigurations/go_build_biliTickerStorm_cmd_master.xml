@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="go build biliTickerStorm/cmd/master" type="GoApplicationRunConfiguration" factoryName="Go Application" singleton="false" nameIsGenerated="true">
+    <module name="biliTickerStorm" />
+    <working_directory value="$PROJECT_DIR$" />
+    <envs>
+      <env name="CONFIG_PATH" value="C:\Users\mikumifa\GolandProjects\biliTickerStorm\data" />
+    </envs>
+    <kind value="PACKAGE" />
+    <package value="biliTickerStorm/cmd/master" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/cmd/master/main.go" />
+    <method v="2" />
+  </configuration>
+</component>

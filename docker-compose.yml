@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  ticket-master:
+    build:
+      context: .
+      dockerfile: master.Dockerfile
+    container_name: ticket-master-service
+    restart: unless-stopped
+    networks:
+      - app-network
+    environment:
+      - CONFIG_PATH=/app/data
+    volumes:
+      - ./data:/app/data
+
+  ticket-worker:
+    build:
+      context: .
+      dockerfile: worker.Dockerfile
+    restart: unless-stopped
+    networks:
+      - app-network
+    environment:
+      - MASTER_SERVER_ADDR=ticket-master:40052
+      - PUSHPLUS_TOKEN=
+      - TICKET_INTERVAL=
+      - GT_BASE_URL=http://gt-python:8000
+      - TICKET_TIME_START=2006-01-02T15:04
+    depends_on:
+      - ticket-master
+      - gt-python
+
+  gt-python:
+    build:
+      context: .
+      dockerfile: python.Dockerfile
+    container_name: gt-python-service
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

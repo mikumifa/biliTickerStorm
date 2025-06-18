@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package worker;
+
+option go_package = "internal/worker/pb;pb";
+//protoc --go_out=. --go-grpc_out=. proto/worker.proto
+service TicketWorker {
+rpc PushTask (TaskRequest) returns (TaskResponse);
+}
+
+message TaskRequest {
+string task_id = 1;
+string tickets_info = 2;
+}
+
+message TaskResponse {
+bool success = 1;
+string message = 2;
+}
