@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: DOCKER
     permissions:
-      contents: read
+      contents: write
       issues: write
     env:
       IMAGE_PREFIX: mikumifa/bili-ticket-storm
