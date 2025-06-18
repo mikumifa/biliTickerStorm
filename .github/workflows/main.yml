@@ -13,7 +13,7 @@ jobs:
       contents: write
       issues: write
     env:
-      IMAGE_PREFIX: mikumifa/bili-ticket-storm
+      IMAGE_PREFIX: mikumifa/bili-ticker-storm
 
     steps:
       - name: Checkout source code
@@ -32,35 +32,35 @@ jobs:
         id: vars
         run: echo "TAG=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
 
-#      - name: Build and push ticket-master image
-#        uses: docker/build-push-action@v5
-#        with:
-#          context: .
-#          file: master.Dockerfile
-#          push: true
-#          tags: |
-#            ${{ env.IMAGE_PREFIX }}-master:latest
-#            ${{ env.IMAGE_PREFIX }}-master:${{ env.TAG }}
-#
-#      - name: Build and push ticket-worker image
-#        uses: docker/build-push-action@v5
-#        with:
-#          context: .
-#          file: worker.Dockerfile
-#          push: true
-#          tags: |
-#            ${{ env.IMAGE_PREFIX }}-worker:latest
-#            ${{ env.IMAGE_PREFIX }}-worker:${{ env.TAG }}
+      - name: Build and push ticket-master image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: master.Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-master:latest
+            ${{ env.IMAGE_PREFIX }}-master:${{ env.TAG }}
 
-#      - name: Build and push gt-python image
-#        uses: docker/build-push-action@v5
-#        with:
-#          context: .
-#          file: python.Dockerfile
-#          push: true
-#          tags: |
-#            ${{ env.IMAGE_PREFIX }}-gt-python:latest
-#            ${{ env.IMAGE_PREFIX }}-gt-python:${{ env.TAG }}
+      - name: Build and push ticket-worker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: worker.Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-worker:latest
+            ${{ env.IMAGE_PREFIX }}-worker:${{ env.TAG }}
+
+      - name: Build and push gt-python image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: python.Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-gt-python:latest
+            ${{ env.IMAGE_PREFIX }}-gt-python:${{ env.TAG }}
 
       - name: Set up Helm
         uses: azure/setup-helm@v4.3.0
@@ -69,7 +69,7 @@ jobs:
         run: helm lint ./helm
 
       - name: Package Helm chart
-        run: helm package helm/ -d packaged-charts
+        run: helm package helm/ -d packaged-charts --version ${{ env.TAG }}
 
       - name: Generate or update index.yaml
         run: |

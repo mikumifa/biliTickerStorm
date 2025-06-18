@@ -1,6 +1,6 @@
 apiVersion: v2
-name: bili-ticket-storm
-description: A Helm chart for bili-ticket-storm app
+name: bili-ticker-storm
+description: A Helm chart for bili-ticker-storm app
 type: application
 version: 0.1.0
 appVersion: "1.0"

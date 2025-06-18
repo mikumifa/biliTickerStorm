@@ -1,16 +1,16 @@
 ticketMaster:
-  image: mikumifa/bili-ticket-storm-master:latest
+  image: mikumifa/bili-ticker-storm-master:latest
   replicas: 1
   configPath: /app/data
   hostDataPath: /run/desktop/mnt/host/c/Users/mikumifa/GolandProjects/biliTickerStorm/data
 
 ticketWorker:
-  image: mikumifa/bili-ticket-storm-worker:latest
+  image: mikumifa/bili-ticker-storm-worker:latest
   pushplusToken: ""
   ticketInterval: ""
   masterServerAddr: ticket-master:40052
   gtBaseUrl: http://gt-python:8000
 
 gtPython:
-  image: mikumifa/bili-ticket-storm-gt-python:latest
+  image: mikumifa/bili-ticker-storm-gt-python:latest
   replicas: 1
