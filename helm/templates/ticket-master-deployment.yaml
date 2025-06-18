@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticket-master
+spec:
+  replicas: {{ .Values.ticketMaster.replicas }}
+  selector:
+    matchLabels:
+      app: ticket-master
+  template:
+    metadata:
+      labels:
+        app: ticket-master
+    spec:
+      containers:
+        - name: ticket-master
+          image: {{ .Values.ticketMaster.image }}
+          env:
+            - name: CONFIG_PATH
+              value: {{ .Values.ticketMaster.configPath | quote }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: {{ .Values.ticketMaster.configPath }}
+      volumes:
+        - name: config-volume
+          hostPath:
+            path: {{ .Values.ticketMaster.hostDataPath }}
+            type: Directory

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ticket-worker
+spec:
+  selector:
+    matchLabels:
+      app: ticket-worker
+  template:
+    metadata:
+      labels:
+        app: ticket-worker
+    spec:
+      containers:
+        - name: ticket-worker
+          image: {{ .Values.ticketWorker.image }}
+          env:
+            - name: MASTER_SERVER_ADDR
+              value: {{ .Values.ticketWorker.masterServerAddr | quote }}
+            - name: PUSHPLUS_TOKEN
+              value: {{ .Values.ticketWorker.pushplusToken | quote }}
+            - name: TICKET_INTERVAL
+              value: {{ .Values.ticketWorker.ticketInterval | quote }}
+            - name: GT_BASE_URL
+              value: {{ .Values.ticketWorker.gtBaseUrl | quote }}

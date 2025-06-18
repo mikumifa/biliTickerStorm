@@ -58,3 +58,18 @@ jobs:
           tags: |
             ${{ env.IMAGE_PREFIX }}-gt-python:latest
             ${{ env.IMAGE_PREFIX }}-gt-python:${{ env.TAG }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4.3.0
+
+      - name: Helm lint
+        run: helm lint ./helm
+
+      - name: Package Helm Chart
+        run: helm package ./helm --destination ./helm-packages
+
+      - name: Upload Helm Chart artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: helm-chart
+          path: ./helm-packages/*.tgz
