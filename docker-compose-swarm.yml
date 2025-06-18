@@ -2,19 +2,16 @@ version: '3.8'
 
 services:
   ticket-master:
-    image: ticket-master:latest
-    container_name: ticket-master-service
-    restart: unless-stopped
+    image: mikumifa/bili-ticket-storm-master:latest
     networks:
       - bili-ticket-storm-network
     environment:
       - CONFIG_PATH=/app/data
     volumes:
-      - ./data:/app/data
+      - ${PWD}/data:/app/data
 
   ticket-worker:
-    image: ticket-worker:latest
-    restart: unless-stopped
+    image: mikumifa/bili-ticket-storm-worker:latest
     networks:
       - bili-ticket-storm-network
     environment:
@@ -31,7 +28,7 @@ services:
       # 或 replicas: 5 来自己设定worker数量
 
   gt-python:
-    image: gt-python:latest
+    image: mikumifa/bili-ticket-storm-gt-python:latest
     container_name: gt-python-service
     restart: unless-stopped
     networks:
@@ -39,4 +36,6 @@ services:
 
 networks:
   bili-ticket-storm-network:
-    external: true
+    driver: overlay
+    attachable: true
+    name: bili-ticket-storm-network

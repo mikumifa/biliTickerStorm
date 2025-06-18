@@ -2,8 +2,8 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "v*" # 只监听 v 开头的 tag，比如 v1.0.0
 
 jobs:
   build-and-push:
@@ -22,8 +22,12 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ DOCKER_USERNAME }}
-          password: ${{ DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract tag name
+        id: vars
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
 
       - name: Build and push ticket-master image
         uses: docker/build-push-action@v5
@@ -31,7 +35,9 @@ jobs:
           context: .
           file: master.Dockerfile
           push: true
-          tags: ${{ env.IMAGE_PREFIX }}-master:latest
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-master:latest
+            ${{ env.IMAGE_PREFIX }}-master:${{ env.TAG }}
 
       - name: Build and push ticket-worker image
         uses: docker/build-push-action@v5
@@ -39,7 +45,9 @@ jobs:
           context: .
           file: worker.Dockerfile
           push: true
-          tags: ${{ env.IMAGE_PREFIX }}-worker:latest
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-worker:latest
+            ${{ env.IMAGE_PREFIX }}-worker:${{ env.TAG }}
 
       - name: Build and push gt-python image
         uses: docker/build-push-action@v5
@@ -47,4 +55,6 @@ jobs:
           context: .
           file: python.Dockerfile
           push: true
-          tags: ${{ env.IMAGE_PREFIX }}-gt-python:latest
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-gt-python:latest
+            ${{ env.IMAGE_PREFIX }}-gt-python:${{ env.TAG }}
