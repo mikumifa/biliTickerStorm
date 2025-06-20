@@ -6,7 +6,6 @@ import (
 	workerpb "biliTickerStorm/internal/worker/pb"
 	"context"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"io/ioutil"
 	"os"
@@ -33,7 +32,6 @@ type Server struct {
 	masterpb.UnimplementedTicketMasterServer
 	workers    map[string]*Worker
 	workersMux sync.RWMutex
-	logger     *logrus.Logger
 	// 任务管理
 	tasks    map[string]*TaskInfo
 	tasksMux sync.RWMutex
@@ -52,7 +50,6 @@ type Server struct {
 func NewServer() *Server {
 	server := &Server{
 		workers:          make(map[string]*Worker),
-		logger:           logrus.New(),
 		tasks:            make(map[string]*TaskInfo),
 		heartbeatTimeout: 10 * time.Second, //
 		taskTimeout:      30 * time.Second, //
@@ -166,7 +163,7 @@ func (s *Server) RegisterWorker(ctx context.Context, req *masterpb.WorkerInfo) (
 		UpdateTime:   time.Now(),
 	}
 	s.workers[req.WorkerId] = newWorker
-	s.logger.Infof("Worker Register: ID=%s, Address=%s, WorkStatus=%s",
+	log.Infof("Worker Register: ID=%s, Address=%s, WorkStatus=%s",
 		req.WorkerId, req.Address, WorkerStatus(req.WorkStatus).String())
 	return &masterpb.RegisterReply{
 		Success: true,
@@ -247,8 +244,11 @@ func (s *Server) checkWorkerHeartbeats() {
 			ideWorkers = append(ideWorkers, workerID)
 		}
 	}
-
-	log.Printf("[Worker] Offline: %d, Banned: %d, Idle: %d, Working: %d", len(offlineWorkers), len(riskingWorkers), len(ideWorkers), len(workingWorkers))
+	log.Printf("[Worker] Banned: %d, Idle: %d, Working: %d", len(riskingWorkers), len(ideWorkers), len(workingWorkers))
+	// 清理离线worker
+	for _, workerID := range offlineWorkers {
+		delete(s.workers, workerID)
+	}
 }
 func (s *Server) triggerSchedule() {
 	select {
@@ -333,7 +333,6 @@ func (s *Server) monitorTasks() {
 				pendingTasks = append(pendingTasks, task)
 			} else {
 				doingTasks = append(doingTasks, task)
-
 			}
 		} else if task.Status == TaskStatusPending {
 			pendingTasks = append(pendingTasks, task)

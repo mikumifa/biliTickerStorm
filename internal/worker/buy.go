@@ -104,11 +104,7 @@ func (w *Worker) Buy(ctx context.Context, ticketsInfo BiliTickerBuyConfig, timeS
 			if errMsg == "" {
 				errMsg = "未知错误码"
 			}
-			log.WithFields(logrus.Fields{
-				"attempt": attempt,
-				"errno":   errno,
-				"errMsg":  errMsg,
-			}).Info("CreateV2")
+			log.Infof("[Create] attempt=%d errno=%d msg=%s", attempt, errno, errMsg)
 			if errno == 100034 {
 				if data, ok := ret["data"].(map[string]interface{}); ok {
 					if payMoney, ok := data["pay_money"].(float64); ok {
@@ -146,6 +142,8 @@ func (w *Worker) Buy(ctx context.Context, ticketsInfo BiliTickerBuyConfig, timeS
 		if errno == 0 {
 			break
 		}
+		log.Info("0）重新下单")
+
 	}
 
 	return nil
