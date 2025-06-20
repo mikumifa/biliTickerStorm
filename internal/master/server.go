@@ -243,10 +243,6 @@ func (s *Server) checkWorkerHeartbeats() {
 	}
 
 	log.Printf("[Summary] Offline: %d, Banned: %d", len(offlineWorkers), len(banWorkers))
-	// 清理离线worker
-	for _, workerID := range offlineWorkers {
-		delete(s.workers, workerID)
-	}
 }
 func (s *Server) triggerSchedule() {
 	select {
