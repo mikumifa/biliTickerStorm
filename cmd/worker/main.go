@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-var log = common.Logger
+var log = common.GetLogger("worker")
 
 func main() {
 	register := worker.NewWorkerManager(worker.Cfg.MasterServerAddr) // 主服务器地址

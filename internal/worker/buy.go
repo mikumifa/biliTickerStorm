@@ -1,7 +1,7 @@
 package worker
 
 import (
-	"biliTickerStorm/internal/common"
+	. "biliTickerStorm/internal/common"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	_ "time/tzdata"
 )
 
-var log = common.Logger
+var log = GetLogger("worker")
 
 func (w *Worker) Buy(ctx context.Context, ticketsInfo BiliTickerBuyConfig, timeStart *time.Time, interval int, pushplusToken string) error {
 	log.WithFields(logrus.Fields{
@@ -40,7 +40,7 @@ func (w *Worker) Buy(ctx context.Context, ticketsInfo BiliTickerBuyConfig, timeS
 	for {
 		select {
 		case <-ctx.Done():
-			err := w.m.CancelTask(common.Risking)
+			err := w.m.CancelTask(Risking)
 			if err != nil {
 				return err
 			}

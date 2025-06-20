@@ -11,7 +11,7 @@ import (
 	"syscall"
 )
 
-var log = common.Logger
+var log = common.GetLogger("master")
 
 func main() {
 
@@ -25,7 +25,7 @@ func main() {
 	}
 	s := grpc.NewServer()
 	pb.RegisterTicketMasterServer(s, masterServer)
-	log.Println("BiliTickerStorm Master started successfully，listening at 40052")
+	log.Println("listening at 40052")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Start failed: %v", err)
 	}

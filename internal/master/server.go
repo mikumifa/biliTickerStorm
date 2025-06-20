@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-var log = logrus.New()
+var log = GetLogger("master")
 
 // Worker 工作节点信息
 type Worker struct {
@@ -89,8 +89,7 @@ func (s *Server) LoadTasksFromDir(dirPath string) error {
 			}
 			taskName := strings.TrimSuffix(file.Name(), ".json")
 			tickerConfigContent := string(content)
-			task := s.CreateTask(taskName, tickerConfigContent)
-			log.Printf("Loaded task from file: %s => Task ID: %s", file.Name(), task.ID)
+			_ = s.CreateTask(taskName, tickerConfigContent)
 		}
 	}
 
@@ -220,7 +219,9 @@ func (s *Server) checkWorkerHeartbeats() {
 
 	now := time.Now()
 	offlineWorkers := make([]string, 0)
-	banWorkers := make([]string, 0)
+	riskingWorkers := make([]string, 0)
+	workingWorkers := make([]string, 0)
+	ideWorkers := make([]string, 0)
 
 	for workerID, worker := range s.workers {
 		if now.Sub(worker.UpdateTime) > s.heartbeatTimeout {
@@ -237,12 +238,17 @@ func (s *Server) checkWorkerHeartbeats() {
 		} else if now.Sub(worker.BanTime) > s.banTimeout && worker.Status == Risking {
 			log.Printf("[Unban] %s rest time (%.0fs) ended, marked as IDLE", workerID, s.banTimeout.Seconds())
 			worker.Status = Idle
+			ideWorkers = append(ideWorkers, workerID)
 		} else if worker.Status == Risking {
-			offlineWorkers = append(banWorkers, workerID)
+			offlineWorkers = append(offlineWorkers, workerID)
+		} else if worker.Status == Working {
+			workingWorkers = append(workingWorkers, workerID)
+		} else if worker.Status == Idle {
+			ideWorkers = append(ideWorkers, workerID)
 		}
 	}
 
-	log.Printf("[Summary] Offline: %d, Banned: %d", len(offlineWorkers), len(banWorkers))
+	log.Printf("[Worker] Offline: %d, Banned: %d, Idle: %d, Working: %d", len(offlineWorkers), len(riskingWorkers), len(ideWorkers), len(workingWorkers))
 }
 func (s *Server) triggerSchedule() {
 	select {
@@ -315,6 +321,9 @@ func (s *Server) monitorTasks() {
 
 	now := time.Now()
 	pendingTasks := make([]*TaskInfo, 0)
+	doingTasks := make([]*TaskInfo, 0)
+	doneTasks := make([]*TaskInfo, 0)
+
 	DoneTaskNum := 0
 	for _, task := range s.tasks {
 		if task.Status == TaskStatusDoing {
@@ -322,16 +331,22 @@ func (s *Server) monitorTasks() {
 				log.Printf("[Timeout] Task %s timeout, marked as PENDING", task.ID)
 				task.Status = TaskStatusPending
 				pendingTasks = append(pendingTasks, task)
+			} else {
+				doingTasks = append(doingTasks, task)
+
 			}
 		} else if task.Status == TaskStatusPending {
 			pendingTasks = append(pendingTasks, task)
+		} else if task.Status == TaskStatusDone {
+			doneTasks = append(doneTasks, task)
 		}
 	}
 	if DoneTaskNum == len(s.tasks) {
-		log.WithField("pending", len(pendingTasks)).Info("[Complete] All tasks done")
+		log.Infof("[Complete] All tasks done")
+		log.Exit(0)
 	}
 
-	log.WithField("pending", len(pendingTasks)).Info("[Monitor] Checking pending tasks")
+	log.Infof("[Task] Pending: %d, Done: %d, Doing: %d", len(pendingTasks), len(doneTasks), len(doingTasks))
 	// 重新分配risking任务
 	if len(pendingTasks) > 0 {
 		defer s.triggerSchedule()
