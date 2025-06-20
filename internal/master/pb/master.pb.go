@@ -153,7 +153,7 @@ type CancelTaskInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CancelTaskId  string                 `protobuf:"bytes,1,opt,name=cancelTaskId,proto3" json:"cancelTaskId,omitempty"` //
 	WorkerId      string                 `protobuf:"bytes,2,opt,name=workerId,proto3" json:"workerId,omitempty"`
-	WorkStatus    string                 `protobuf:"bytes,3,opt,name=workStatus,proto3" json:"workStatus,omitempty"`
+	WorkStatus    int32                  `protobuf:"varint,3,opt,name=workStatus,proto3" json:"workStatus,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -202,11 +202,11 @@ func (x *CancelTaskInfo) GetWorkerId() string {
 	return ""
 }
 
-func (x *CancelTaskInfo) GetWorkStatus() string {
+func (x *CancelTaskInfo) GetWorkStatus() int32 {
 	if x != nil {
 		return x.WorkStatus
 	}
-	return ""
+	return 0
 }
 
 type CancelReply struct {
@@ -284,7 +284,7 @@ const file_proto_master_proto_rawDesc = "" +
 	"\fcancelTaskId\x18\x01 \x01(\tR\fcancelTaskId\x12\x1a\n" +
 	"\bworkerId\x18\x02 \x01(\tR\bworkerId\x12\x1e\n" +
 	"\n" +
-	"workStatus\x18\x03 \x01(\tR\n" +
+	"workStatus\x18\x03 \x01(\x05R\n" +
 	"workStatus\"A\n" +
 	"\vCancelReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +

@@ -25,6 +25,7 @@ type Worker struct {
 	Status       WorkerStatus
 	TaskAssigned string
 	UpdateTime   time.Time //心跳
+	BanTime      time.Time //风控时间
 }
 
 // Server 服务器结构
@@ -39,7 +40,9 @@ type Server struct {
 	// 配置
 	heartbeatTimeout time.Duration
 	taskTimeout      time.Duration
-	maxRetries       int
+	banTimeout       time.Duration
+
+	maxRetries int
 	// 停止信号
 	stopChan        chan struct{}
 	scheduleTrigger chan struct{} // 🔔 调度触发通道
@@ -53,6 +56,7 @@ func NewServer() *Server {
 		tasks:            make(map[string]*TaskInfo),
 		heartbeatTimeout: 10 * time.Second, //
 		taskTimeout:      30 * time.Second, //
+		banTimeout:       5 * time.Minute,  //
 		maxRetries:       3,
 		stopChan:         make(chan struct{}),
 		scheduleTrigger:  make(chan struct{}, 1),
@@ -107,8 +111,13 @@ func (s *Server) CancelTask(ctx context.Context, req *masterpb.CancelTaskInfo) (
 	}
 	ownWorkerId := req.WorkerId
 	s.workers[ownWorkerId].TaskAssigned = ""
-	s.workers[ownWorkerId].Status = Idle
+	if s.workers[ownWorkerId].Status != Risking && WorkerStatus(req.WorkStatus) == Risking {
+		log.Printf("Worker %s 出现风控，标记为Risking", ownWorkerId)
+		s.workers[ownWorkerId].BanTime = time.Now() //设置风控时间
+	}
+	s.workers[ownWorkerId].Status = WorkerStatus(req.WorkStatus)
 	s.workers[ownWorkerId].UpdateTime = time.Now()
+
 	return &masterpb.CancelReply{
 		Success: true,
 		Message: fmt.Sprintf("<%s> cancel <%s> Successfully.", req.WorkerId, req.CancelTaskId),
@@ -211,22 +220,29 @@ func (s *Server) checkWorkerHeartbeats() {
 
 	now := time.Now()
 	offlineWorkers := make([]string, 0)
+	banWorkers := make([]string, 0)
 
 	for workerID, worker := range s.workers {
 		if now.Sub(worker.UpdateTime) > s.heartbeatTimeout {
-			log.Printf("Worker %s 心跳超时，标记为离线", workerID)
+			log.Printf("[Offline] %s timeout (%.0fs), marked as DOWN", workerID, s.heartbeatTimeout.Seconds())
 			worker.Status = Down
 			offlineWorkers = append(offlineWorkers, workerID)
 			if worker.TaskAssigned != "" {
-				log.Printf("Worker %s 所持有的任务 %s 标记为pending", workerID, worker.TaskAssigned)
+				log.Printf("[Reassign] %s task %s -> PENDING", workerID, worker.TaskAssigned)
 				s.tasksMux.Lock()
 				s.clearAndPendingTask(s.tasks[worker.TaskAssigned]) //重新分配
 				s.tasksMux.Unlock()
 				s.triggerSchedule() //离线触发调度
 			}
+		} else if now.Sub(worker.BanTime) > s.banTimeout && worker.Status == Risking {
+			log.Printf("[Unban] %s rest time (%.0fs) ended, marked as IDLE", workerID, s.banTimeout.Seconds())
+			worker.Status = Idle
+		} else if worker.Status == Risking {
+			offlineWorkers = append(banWorkers, workerID)
 		}
 	}
 
+	log.Printf("[Summary] Offline: %d, Banned: %d", len(offlineWorkers), len(banWorkers))
 	// 清理离线worker
 	for _, workerID := range offlineWorkers {
 		delete(s.workers, workerID)
@@ -307,7 +323,7 @@ func (s *Server) monitorTasks() {
 	for _, task := range s.tasks {
 		if task.Status == TaskStatusDoing {
 			if now.Sub(task.UpdatedAt) > s.taskTimeout {
-				log.Printf("任务 %s 执行超时，标记为pending", task.ID)
+				log.Printf("[Timeout] Task %s timeout, marked as PENDING", task.ID)
 				task.Status = TaskStatusPending
 				pendingTasks = append(pendingTasks, task)
 			}
@@ -316,13 +332,10 @@ func (s *Server) monitorTasks() {
 		}
 	}
 	if DoneTaskNum == len(s.tasks) {
-		log.WithFields(logrus.Fields{
-			"number": len(pendingTasks),
-		}).Info("Finish all tasks")
+		log.WithField("pending", len(pendingTasks)).Info("[Complete] All tasks done")
 	}
-	log.WithFields(logrus.Fields{
-		"number": len(pendingTasks),
-	}).Info("monitor pending tasks")
+
+	log.WithField("pending", len(pendingTasks)).Info("[Monitor] Checking pending tasks")
 	// 重新分配risking任务
 	if len(pendingTasks) > 0 {
 		defer s.triggerSchedule()
@@ -337,7 +350,7 @@ func (s *Server) assignTaskToWorker(task *TaskInfo, worker *Worker) bool {
 	// 通过gRPC调用worker
 	conn, err := grpc.Dial(worker.Address, grpc.WithInsecure())
 	if err != nil {
-		log.Printf("连接Worker %s 失败: %v", worker.WorkerID, err)
+		log.Printf("[ConnectFail] Worker %s: %v", worker.WorkerID, err)
 		return false
 	}
 	defer conn.Close()
@@ -353,12 +366,12 @@ func (s *Server) assignTaskToWorker(task *TaskInfo, worker *Worker) bool {
 
 	reply, err := client.PushTask(ctx, req)
 	if err != nil {
-		log.Printf("分配任务给Worker %s 失败: %v", worker.WorkerID, err)
+		log.Printf("[AssignFail] Worker %s: %v", worker.WorkerID, err)
 		return false
 	}
 
 	if !reply.Success {
-		log.Printf("Worker %s 拒绝任务: %s", worker.WorkerID, reply.Message)
+		log.Printf("[Reject] Worker %s: %s", worker.WorkerID, reply.Message)
 		return false
 	}
 
@@ -373,7 +386,7 @@ func (s *Server) assignTaskToWorker(task *TaskInfo, worker *Worker) bool {
 	worker.Status = Working
 	worker.TaskAssigned = task.ID
 	s.workersMux.Unlock()
-	log.Printf("任务成功分配 <%s> => <%s>", task.TaskName, worker.Address)
+	log.Printf("[Assign] Task <%s> -> Worker <%s>", task.TaskName, worker.Address)
 	return true
 }
 

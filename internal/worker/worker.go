@@ -33,7 +33,7 @@ func (w *Worker) RunTask(ctx context.Context, info, taskId string) error {
 
 	var config BiliTickerBuyConfig
 	if err := json.Unmarshal([]byte(info), &config); err != nil {
-		fmt.Println("解析 BiliTickerBuy Config 出错:", err)
+		log.Printf("[ConfigError] BiliTickerBuy: %v", err)
 		return fmt.Errorf("解析配置失败: %w", err)
 	}
 	go func() {

@@ -116,7 +116,7 @@ func (wm *Register) CancelTask(s WorkerStatus) error {
 	req := &masterpb.CancelTaskInfo{
 		WorkerId:     wm.workerID,
 		CancelTaskId: wm.TaskAssigned,
-		WorkStatus:   string(s),
+		WorkStatus:   int32(s),
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

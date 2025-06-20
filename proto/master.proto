@@ -25,7 +25,7 @@ message RegisterReply {
 message CancelTaskInfo {
   string cancelTaskId = 1; //
   string workerId=2;
-  string workStatus=3;
+  int32 workStatus=3;
 }
 
 message CancelReply {
