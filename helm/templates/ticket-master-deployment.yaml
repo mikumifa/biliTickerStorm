@@ -13,7 +13,7 @@ spec:
         app: ticket-master
     spec:
       nodeSelector:
-        node-role.kubernetes.io/master: true
+        node-role.kubernetes.io/master: "true"
       containers:
         - name: ticket-master
           image: {{ .Values.ticketMaster.image }}
