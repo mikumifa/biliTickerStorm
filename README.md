@@ -24,9 +24,8 @@ helm repo update
 ### 2. 安装 Chart
 
 ```bash
-# 如果使用本地 Chart 目录
 helm install bili-ticker-storm bili-ticker-storm/bili-ticker-storm \
-  --set hostDataPath=/your/host/data/path \
+  --set ticketMaster.hostDataPath=/your/host/data/path \
   --set ticketWorker.pushplusToken="your_token" \
   --set ticketWorker.ticketInterval="300" \
   --set ticketWorker.ticketTimeStart="2025-05-20T13:14"
@@ -55,8 +54,8 @@ helm upgrade bili-ticker-storm bili-ticker-storm/bili-ticker-storm --reuse-value
 # 克隆仓库
 git clone https://github.com/mikumifa/biliTickerStorm
 # 使用本地 Chart 包
-helm install bili-ticker-storm bili-ticker-storm/bili-ticker-storm \
-  --set hostDataPath=/your/host/data/path \
+helm install bili-ticker-storm ./helm \
+  --set ticketMaster.hostDataPath=/your/host/data/path \
   --set ticketWorker.pushplusToken="your_token" \
   --set ticketWorker.ticketInterval="300" \
   --set ticketWorker.ticketTimeStart="2025-05-20T13:14"

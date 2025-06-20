@@ -59,7 +59,7 @@ func (wm *Register) RegisterToMaster() error {
 
 	err = wm.sendHeartbeat()
 	if err != nil {
-		log.Warningf("注册到主服务器失败:%v", err)
+		log.Errorf("注册到主服务器失败:%v", err)
 	}
 	log.Printf("成功注册到主服务器: WorkerID=%s, Address=%s", wm.workerID, wm.address)
 	return nil
