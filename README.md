@@ -14,6 +14,8 @@
 
 ## 🚀 快速部署步骤
 
+> 集群搭建可以参考 [集群搭建指南](docs/集群搭建参考.md)。
+
 <details> <summary><strong>📦 远程仓库安装（推荐）</strong></summary>
 
 ```bash
