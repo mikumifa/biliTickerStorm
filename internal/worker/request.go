@@ -127,6 +127,8 @@ func (bc *BiliClient) handleHTTPStatus(resp *fasthttp.Response) error {
 			bc.worker.cancel() //取消
 		}
 		return fmt.Errorf("412风控")
+	case fasthttp.StatusTooManyRequests:
+		return fmt.Errorf("429请求过多")
 	default:
 		return fmt.Errorf("HTTP %d: %s", status, resp.Body())
 	}

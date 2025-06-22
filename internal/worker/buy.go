@@ -132,7 +132,6 @@ func (w *Worker) Buy(ctx context.Context, ticketsInfo BiliTickerBuyConfig, timeS
 				log.Info("订单准备过期，重新验证")
 				break
 			}
-
 			time.Sleep(time.Duration(interval) * time.Millisecond)
 		}
 		if errno == 100051 {
