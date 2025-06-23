@@ -34,7 +34,7 @@ helm install bili-ticker-storm bili-ticker-storm/bili-ticker-storm \
   
 ```
 
-> - `hostDataPath` 是抢票配置文件目录，挂载给 `ticket-master` 容器用。
+> - `hostDataPath` 是抢票配置文件目录，挂载给 `ticket-master` 容器用。抢票配置文件生成使用 https://github.com/mikumifa/biliTickerBuy
 > - `ticketWorker.pushplusToken` 是plusplus 推送配置，设置后可以接收抢票结果通知。
 > - `ticketWorker.ticketInterval` 是抢票间隔秒数，默认 300 秒。
 > - `ticketWorker.ticketTimeStart` 是定时启动时间，格式为 `2025-05-20T13:14`，不填默认打开容器直接开始抢票。
