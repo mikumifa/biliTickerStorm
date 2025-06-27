@@ -20,6 +20,8 @@ spec:
           env:
             - name: CONFIG_PATH
               value: {{ .Values.ticketMaster.configPath | quote }}
+          ports:
+            - containerPort: 40052
           volumeMounts:
             - name: config-volume
               mountPath: {{ .Values.ticketMaster.configPath }}
