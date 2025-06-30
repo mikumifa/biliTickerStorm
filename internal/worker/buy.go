@@ -80,6 +80,7 @@ func (w *Worker) Buy(ctx context.Context, ticketsInfo BiliTickerBuyConfig, timeS
 		ticketsInfo.Timestamp = time.Now().UnixNano() / int64(time.Millisecond)
 		createURL := fmt.Sprintf("https://show.bilibili.com/api/ticket/order/createV2?project_id=%d", ticketsInfo.ProjectId)
 		var errno int
+		errno = -1
 		for attempt := 1; attempt <= 60; attempt++ {
 			body, err := ticketsInfo.ToCreateV2RequestBody()
 			if err != nil {
