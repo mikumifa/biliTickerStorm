@@ -1,4 +1,35 @@
 
+<div align="right">
+  <details>
+    <summary >🌐 Language</summary>
+    <div>
+      <div align="right">
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=en">English</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=zh-CN">简体中文</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=zh-TW">繁體中文</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=ja">日本語</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=ko">한국어</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=hi">हिन्दी</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=th">ไทย</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=fr">Français</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=de">Deutsch</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=es">Español</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=it">Itapano</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=ru">Русский</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=pt">Português</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=nl">Nederlands</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=pl">Polski</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=ar">العربية</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=fa">فارسی</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=tr">Türkçe</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=vi">Tiếng Việt</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=mikumifa&project=biliTickerStorm&lang=id">Bahasa Indonesia</a></p>
+      </div>
+    </div>
+  </details>
+</div>
+
+
 # 🎫 BiliTickerStorm
 
 
